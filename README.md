@@ -1,7 +1,7 @@
 # miner
 Proof of Concept Arionum Miner
 
-Requires php 7.1 and php-gmp
+Requires php 7.2 and php-gmp
 
 Usage: ./miner [node] [public_key] [private_key]
 
