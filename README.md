@@ -1,5 +1,5 @@
 # miner
-Proof of Concert Arionum Miner
+Proof of Concept Arionum Miner
 
 Requires php 7.1 and php-gmp
 
