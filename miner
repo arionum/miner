@@ -28,6 +28,43 @@ exit;
 }
 if($type=="pool") $private_key=$public_key;
 
+   //all credits for this base58 functions should go to tuupola / https://github.com/tuupola/base58/
+    function baseConvert(array $source, $source_base, $target_base)
+    {
+        $result = [];
+        while ($count = count($source)) {
+            $quotient = [];
+            $remainder = 0;
+            for ($i = 0; $i !== $count; $i++) {
+                $accumulator = $source[$i] + $remainder * $source_base;
+                $digit = (integer) ($accumulator / $target_base);
+                $remainder = $accumulator % $target_base;
+                if (count($quotient) || $digit) {
+                    array_push($quotient, $digit);
+                };
+            }
+            array_unshift($result, $remainder);
+            $source = $quotient;
+        }
+        return $result;
+    }
+     function base58_decode($data, $integer = false)
+    {
+        $data = str_split($data);
+        $data = array_map(function ($character) {
+                $chars="123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+            return strpos($chars, $character);
+        }, $data);
+        /* Return as integer when requested. */
+        if ($integer) {
+            $converted = baseConvert($data, 58, 10);
+            return (integer) implode("", $converted);
+        }
+        $converted = baseConvert($data, 58, 256);
+        return implode("", array_map(function ($ascii) {
+            return chr($ascii);
+        }, $converted));
+    }
 
 class Miner {
     private $public_key;
@@ -151,8 +188,11 @@ class Miner {
 
 
 }
-
-
+//checking if the address is valid
+if($type=="pool"){
+	$dst_b=base58_decode($public_key);
+	if(strlen($dst_b)!=64)  die("ERROR: Invalid Arionum address!");
+}
 
 $worker=uniqid();
 
