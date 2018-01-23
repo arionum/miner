@@ -58,7 +58,6 @@ if($type=="pool") $private_key=$public_key;
         /* Return as integer when requested. */
         if ($integer) {
             $converted = baseConvert($data, 58, 10);
-            echo "b58_2_int: /".implode("", $converted)."/";
             return (integer) implode("", $converted);
         }
         $converted = baseConvert($data, 58, 256);
@@ -119,9 +118,8 @@ class Miner {
 	}
 	private function submit($nonce,$argon){
 
-		echo "--> Submitting nonce $nonce / $argon\n";
-
 		$argon=substr($argon,29);
+		echo "--> Submitting nonce $nonce / $argon\n";
 
 
 		$postdata = http_build_query(
