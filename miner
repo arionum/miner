@@ -58,6 +58,7 @@ if($type=="pool") $private_key=$public_key;
         /* Return as integer when requested. */
         if ($integer) {
             $converted = baseConvert($data, 58, 10);
+            echo "b58_2_int: /".implode("", $converted)."/";
             return (integer) implode("", $converted);
         }
         $converted = baseConvert($data, 58, 256);
@@ -70,20 +71,29 @@ class Miner {
     private $public_key;
     private $private_key;
 	private $speed;
+	private $avg_speed;
 	private $node;
 	private $block;
 	private $difficulty;
 	private $counter;
+	private $alltime;
 	private $type;
 	private $limit;
 	private $worker;
 	private $last_update;
+	private $submit;
+	private $confirm;
+	private $found;
 	public function prepare($pub, $priv, $node, $type,$worker){
-				$this->public_key=$pub;
-		                $this->private_key=$priv;
-				$this->node=$node;
-				$this->type=$type;
-				$this->worker=$worker;				
+		$this->public_key=$pub;
+		$this->private_key=$priv;
+		$this->node=$node;
+		$this->type=$type;
+		$this->worker=$worker;
+		$this->counter=0;
+		$this->submit=0;
+		$this->confirm=0;
+		$this->found=0;
 	}
 
 	public function update(){
@@ -91,10 +101,10 @@ class Miner {
 		echo "--> Updating mining info\n";
 		$extra="";
 		if($this->type=="pool") $extra="&worker=".$this->worker."&address=".$this->private_key."&hashrate=".$this->speed;
-		 $res=file_get_contents($this->node."/mine.php?q=info".$extra);
+		$res=file_get_contents($this->node."/mine.php?q=info".$extra);
 
-        	 $info=json_decode($res,true);
-       		 if($info['status']!="ok") return false;
+        	$info=json_decode($res,true);
+       		if($info['status']!="ok") return false;
 		$data=$info['data'];
 		$this->block=$data['block'];
 		$this->difficulty=$data['difficulty'];
@@ -109,10 +119,9 @@ class Miner {
 	}
 	private function submit($nonce,$argon){
 
-		$argon=substr($argon,29);
 		echo "--> Submitting nonce $nonce / $argon\n";
 
-		
+		$argon=substr($argon,29);
 
 
 		$postdata = http_build_query(
@@ -138,22 +147,29 @@ class Miner {
 		$res = file_get_contents($this->node."/mine.php?q=submitNonce", false, $context);
 		$data=json_decode($res,true);
 
-		if($data['status']=="ok") echo "\n--> Nonce confirmed.\n";
-		else echo "--> The nonce did not confirm.\n\n";
+		if($data['status']=="ok") {
+			echo "\n--> Nonce confirmed.\n";
+			return true;
+		} else {
+			echo "--> The nonce did not confirm.\n\n";
+			return false;
+		}
 		
 	}
 	public function run(){
+		$this->alltime=microtime(true);
+		$this->begintime=time();
 		$it=0;
+		$this->counter = 0;
 		$start=microtime(true);
 		while(1){
-		$this->counter++;
-		if(time()-$this->last_update>2) {
-			echo "--> Hash rate: ".$this->speed." H/s\n";
-			$this->update();
-			$this->counter=0;
-		}
-	        $nonce=base64_encode(openssl_random_pseudo_bytes(32));
-        	$nonce = preg_replace("/[^a-zA-Z0-9]/", "", $nonce);
+			$this->counter++;
+			if(time()-$this->last_update>2) {
+				echo "--> Last hash rate: ".$this->speed." H/s   Average: ".$this->avg_speed." H/s  Total hashes: ".$this->counter."  Mining Time: ".(time()-$this->begintime)."  Shares: ".$this->confirm." Finds: ".$this->found."\n";
+				$this->update();
+			}
+		        $nonce=base64_encode(openssl_random_pseudo_bytes(32));
+        		$nonce = preg_replace("/[^a-zA-Z0-9]/", "", $nonce);
 			$base=$this->public_key."-".$nonce."-".$this->block."-".$this->difficulty;
 			$argon=password_hash($base, PASSWORD_ARGON2I, array('memory_cost' => 16384, "time_cost"=>4, "threads"=>4));
 
@@ -171,14 +187,20 @@ class Miner {
 						
 			$result=gmp_div($duration,$this->difficulty);
 			if($result>0&&$result<=$this->limit){
-				$this->submit($nonce,$argon);		
-				
+				$confirmed = $this->submit($nonce,$argon);
+				if($confirmed && $result<=240) {
+					$this->found++;
+				} elseif ($confirmed) {
+					$this->confirm++;
+				}
+				$this->submit++;
 			}
 			$it++;
 			if($it==100){ 
 				$it=0;
 				$end=microtime(true);
 				$this->speed=100/($end-$start);
+				$this->avg_speed=$this->counter/($end-$this->alltime);
 				$start=$end;
 			}
 			
@@ -199,8 +221,7 @@ $worker=uniqid();
 $miner= new Miner;
 $miner->prepare($public_key,$private_key, $node,$type,$worker);
 $res=$miner->update();
-if(!$res) die("ERROR: Could not get mining info frm the node");
-
+if(!$res) die("ERROR: Could not get mining info from the node");
 $miner->run();
 
 
