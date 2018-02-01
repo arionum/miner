@@ -1,7 +1,7 @@
 # miner
 Proof of Concept Arionum Miner
 
-Requires php 7.2 and php-gmp
+Requires php 7.2 , php-gmp and php-openssl
 
 For solo mining:
 
