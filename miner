@@ -4,7 +4,7 @@ echo "######################\n";
 echo "# Arionum Miner v0.1 #\n";
 echo "# www.arionum.com    #\n";
 echo "######################\n\n";
-error_reporting(1);
+error_reporting(0);
 if (!extension_loaded("gmp")) die("gmp php extension missing");
 if (!extension_loaded("openssl")) die("openssl php extension missing");
 
