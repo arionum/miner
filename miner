@@ -1,7 +1,7 @@
 #!/usr/bin/php
 <?php
 echo "######################\n";
-echo "# Arionum Miner v0.1 #\n";
+echo "# Arionum Miner v0.2 #\n";
 echo "# www.arionum.com    #\n";
 echo "######################\n\n";
 error_reporting(0);
