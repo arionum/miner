@@ -199,7 +199,7 @@ class Miner {
 				$it=0;
 				$end=microtime(true);
 
-				$this->speed=100/($end-$start);
+				$this->speed=10/($end-$start);
 				$this->avg_speed=$this->counter/($end-$this->alltime);
 				$start=$end;
 			}
