@@ -1,11 +1,13 @@
 #!/usr/bin/php
 <?php
 echo "######################\n";
-echo "# Arionum Miner v0.1 #\n";
+echo "# Arionum Miner v0.2 #\n";
 echo "# www.arionum.com    #\n";
 echo "######################\n\n";
 error_reporting(0);
 if (!extension_loaded("gmp")) die("gmp php extension missing");
+if (!extension_loaded("openssl")) die("openssl php extension missing");
+
 if(floatval(phpversion())<7.2) die("The minimum php version required is 7.2");
 if (!defined("PASSWORD_ARGON2I")) die("The php version is not compiled with argon2i support");
 
@@ -118,7 +120,7 @@ class Miner {
 	}
 	private function submit($nonce,$argon){
 
-		$argon=substr($argon,29);
+		$argon=substr($argon,30);
 		echo "--> Submitting nonce $nonce / $argon\n";
 
 
@@ -169,8 +171,7 @@ class Miner {
 		        $nonce=base64_encode(openssl_random_pseudo_bytes(32));
         		$nonce = preg_replace("/[^a-zA-Z0-9]/", "", $nonce);
 			$base=$this->public_key."-".$nonce."-".$this->block."-".$this->difficulty;
-			$argon=password_hash($base, PASSWORD_ARGON2I, array('memory_cost' => 16384, "time_cost"=>4, "threads"=>4));
-
+			$argon=password_hash($base, PASSWORD_ARGON2I, array('memory_cost' => 524288, "time_cost"=>1, "threads"=>1));
 			$hash=$base.$argon;
 			for($i=0;$i<5;$i++){
 				$hash=hash("sha512",$hash,true);
@@ -194,9 +195,10 @@ class Miner {
 				$this->submit++;
 			}
 			$it++;
-			if($it==100){ 
+			if($it==10){ 
 				$it=0;
 				$end=microtime(true);
+
 				$this->speed=100/($end-$start);
 				$this->avg_speed=$this->counter/($end-$this->alltime);
 				$start=$end;
