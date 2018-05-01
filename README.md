@@ -1,19 +1,30 @@
 # miner
-Proof of Concept Arionum Miner
 
-Requires php 7.2 , php-gmp and php-openssl
+A proof of concept Arionum miner.
 
-For solo mining:
+## Install
 
-Usage: ./miner solo [node] [public_key] [private_key]
+**Requirements:**
+
+- PHP 7.2
+  - GMP extension
+  - OpenSSL extension
+
+## Usage
+
+**For pool mining:**
+
 The miner's IP must be added in the node's allowed hosts.
 
+```bash
+miner solo [node] [public_key] [private_key]
+```
 
-For pool mining:
+**For pool mining:**
 
-Usage: ./miner pool http://aropool.com [address]
-
-
+```bash
+miner pool http://aropool.com [address]
+```
 
 To install php from source in ubuntu/debian/mint:
 
@@ -37,10 +48,7 @@ Otherwise it will install to /usr/local/bin
 
 `sudo make install`
 
-
-
-
-Development Fund:
+## Development Fund
 
 ARO: 5WuRMXGM7Pf8NqEArVz1NxgSBptkimSpvuSaYC79g1yo3RDQc8TjVtGH5chQWQV7CHbJEuq9DmW5fbm CEW4AghQr
 
