@@ -13,9 +13,27 @@ $private_key = trim($argv[4]);
 
 new Miner($type, $node, $public_key, $private_key);
 
+/**
+ * Class Miner
+ */
 class Miner
 {
+    /**
+     * The current version of the miner.
+     */
     public const VERSION = 'v0.2';
+    /**
+     * The mode name for pool mining.
+     */
+    public const MODE_POOL = 'pool';
+    /**
+     * The mode name for solo mining.
+     */
+    public const MODE_SOLO = 'solo';
+    /**
+     * The response status for OK.
+     */
+    public const NODE_STATUS_OK = 'ok';
 
     private $publicKey;
     private $privateKey;
@@ -35,13 +53,21 @@ class Miner
     private $confirm;
     private $found;
 
+    /**
+     * Miner constructor.
+     *
+     * @param $type
+     * @param $node
+     * @param $public_key
+     * @param $private_key
+     */
     public function __construct($type, $node, $public_key, $private_key)
     {
         $this->outputHeader();
 
         $this->checkDependencies();
 
-        if (empty($type) || empty($public_key) || empty($node) || ($type == "solo" && empty($private_key))) {
+        if (empty($type) || empty($public_key) || empty($node) || ($type == self::MODE_SOLO && empty($private_key))) {
             echo "Usage:
 
 For Solo mining: ./miner solo <node> <public_key> <private_key>
@@ -50,13 +76,11 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
             exit;
         }
 
-        if ($type == "pool") {
+        if ($type == self::MODE_POOL) {
             $private_key = $public_key;
-        }
 
-        //checking if the address is valid
-        if ($type == "pool") {
-            $dst_b = $this->base58_decode($public_key);
+            // Check address validity
+            $dst_b = $this->base58Decode($public_key);
             if (strlen($dst_b) != 64) {
                 die("ERROR: Invalid Arionum address!");
             }
@@ -73,10 +97,17 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
         $this->run();
     }
 
-    public function prepare($pub, $priv, $node, $type, $worker)
+    /**
+     * @param string $publicKey
+     * @param string $privateKey
+     * @param string $node
+     * @param string $type
+     * @param string $worker
+     */
+    public function prepare(string $publicKey, string $privateKey, string $node, string $type, string $worker)
     {
-        $this->publicKey = $pub;
-        $this->privateKey = $priv;
+        $this->publicKey = $publicKey;
+        $this->privateKey = $privateKey;
         $this->node = $node;
         $this->type = $type;
         $this->worker = $worker;
@@ -86,26 +117,30 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
         $this->found = 0;
     }
 
-    public function update()
+    /**
+     * @return bool
+     */
+    public function update(): bool
     {
         $this->lastUpdate = time();
 
         echo "--> Updating mining info\n";
 
         $extra = "";
-        if ($this->type == "pool") {
+        if ($this->type == self::MODE_POOL) {
             $extra = "&worker=".$this->worker."&address=".$this->privateKey."&hashrate=".$this->speed;
         }
+
         $res = file_get_contents($this->node."/mine.php?q=info".$extra);
 
         $info = json_decode($res, true);
-        if ($info['status'] != "ok") {
+        if ($info['status'] != self::NODE_STATUS_OK) {
             return false;
         }
         $data = $info['data'];
         $this->block = $data['block'];
         $this->difficulty = $data['difficulty'];
-        if ($this->type == "pool") {
+        if ($this->type == self::MODE_POOL) {
             $this->limit = $data['limit'];
             $this->publicKey = $data['public_key'];
         } else {
@@ -117,13 +152,17 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
         return true;
     }
 
-    private function submit($nonce, $argon)
+    /**
+     * @param string $nonce
+     * @param string $argon
+     * @return bool
+     */
+    private function submit(string $nonce, string $argon): bool
     {
-
         $argon = substr($argon, 30);
         echo "--> Submitting nonce $nonce / $argon\n";
 
-        $postdata = http_build_query(
+        $postData = http_build_query(
             [
                 'argon'       => $argon,
                 'nonce'       => $nonce,
@@ -138,7 +177,7 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
                 [
                     'method'  => 'POST',
                     'header'  => 'Content-type: application/x-www-form-urlencoded',
-                    'content' => $postdata,
+                    'content' => $postData,
                 ],
         ];
 
@@ -147,7 +186,7 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
         $res = file_get_contents($this->node."/mine.php?q=submitNonce", false, $context);
         $data = json_decode($res, true);
 
-        if ($data['status'] == "ok") {
+        if ($data['status'] == self::NODE_STATUS_OK) {
             echo "\n--> Nonce confirmed.\n";
             return true;
         } else {
@@ -156,6 +195,9 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
         }
     }
 
+    /**
+     * Run the miner.
+     */
     public function run()
     {
         $this->allTime = microtime(true);
@@ -274,6 +316,9 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
         }, $converted));
     }
 
+    /**
+     * Check for the required dependencies.
+     */
     public function checkDependencies()
     {
         if (!extension_loaded("gmp")) {
@@ -293,6 +338,9 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
         }
     }
 
+    /**
+     * Output the miner header text.
+     */
     public function outputHeader()
     {
         echo "######################\n";
