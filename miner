@@ -124,8 +124,8 @@ class Miner {
 		return true;
 	}
 	private function submit($nonce,$argon){
-
-		$argon=substr($argon,30);
+                if($this->height>10800) $argon=substr($argon,30);
+                else $argon=substr($argon,29);
 		echo "--> Submitting nonce $nonce / $argon\n";
 
 
