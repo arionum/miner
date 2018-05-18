@@ -85,6 +85,8 @@ class Miner {
 	private $submit;
 	private $confirm;
 	private $found;
+	private $height;
+	private $testnet;
 	public function prepare($pub, $priv, $node, $type,$worker){
 		$this->public_key=$pub;
 		$this->private_key=$priv;
@@ -115,6 +117,9 @@ class Miner {
 		} else {
 			$this->limit=240;
 		}
+		$this->height=$data['height'];
+		$this->testnet=$data['testnet'];
+		if($this->testnet) $this->limit=1000000000;
 		echo "Min DL: ".$this->limit."\n";
 		return true;
 	}
@@ -171,7 +176,11 @@ class Miner {
 		        $nonce=base64_encode(openssl_random_pseudo_bytes(32));
         		$nonce = preg_replace("/[^a-zA-Z0-9]/", "", $nonce);
 			$base=$this->public_key."-".$nonce."-".$this->block."-".$this->difficulty;
-			$argon=password_hash($base, PASSWORD_ARGON2I, array('memory_cost' => 524288, "time_cost"=>1, "threads"=>1));
+		
+			
+			if($this->height>10800) $argon=password_hash($base, PASSWORD_ARGON2I, array('memory_cost' => 524288, "time_cost"=>1, "threads"=>1));
+			else $argon=password_hash($base, PASSWORD_ARGON2I, array('memory_cost' => 16384, "time_cost"=>4, "threads"=>4));
+
 			$hash=$base.$argon;
 			for($i=0;$i<5;$i++){
 				$hash=hash("sha512",$hash,true);
