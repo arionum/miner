@@ -228,7 +228,7 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
                 echo "--> Last hash rate: ".$this->speed." H/s   ".
                     "Average: ".$this->avgSpeed." H/s  ".
                     "Total hashes: ".$this->counter."  ".
-                    "Mining Time: ".(time() - $this->begintime)."  ".
+                    "Mining Time: ".(time() - $this->beginTime)."  ".
                     "Shares: ".$this->confirm." ".
                     "Finds: ".$this->found."\n";
                 $this->update();
