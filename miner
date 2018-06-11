@@ -238,12 +238,6 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
             $nonce = preg_replace("/[^a-zA-Z0-9]/", "", $nonce);
             $base = $this->publicKey."-".$nonce."-".$this->block."-".$this->difficulty;
 
-            $argon = password_hash(
-                $base,
-                PASSWORD_ARGON2I,
-                ['memory_cost' => 524288, "time_cost" => 1, "threads" => 1]
-            );
-
             if ($this->height > 10800) {
                 $argon = password_hash(
                     $base,
