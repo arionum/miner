@@ -168,7 +168,6 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
      */
     private function submit(string $nonce, string $argon): bool
     {
-
         if ($this->height > 10800 && ($this->height<80000 || $this->height%3 == 0)) {
             $argon = substr($argon, 30);
         } else {
