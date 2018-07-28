@@ -21,7 +21,7 @@ class Miner
     /**
      * The current version of the miner.
      */
-    public const VERSION = 'v0.2';
+    public const VERSION = 'v0.4a';
     /**
      * The mode name for pool mining.
      */
@@ -153,7 +153,7 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
         $this->testnet = $data['testnet'];
 
         if ($this->testnet) {
-            $this->limit = 1000000000;
+            $this->limit = 100000000000000;
         }
 
         echo "Min DL: ".$this->limit."\n";
@@ -169,7 +169,7 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
     private function submit(string $nonce, string $argon): bool
     {
 
-        if ($this->height > 10800) {
+        if ($this->height > 10800 && ($this->height<80000 || $this->height%3 == 0)) {
             $argon = substr($argon, 30);
         } else {
             $argon = substr($argon, 29);
@@ -237,7 +237,7 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
             $nonce = preg_replace("/[^a-zA-Z0-9]/", "", $nonce);
             $base = $this->publicKey."-".$nonce."-".$this->block."-".$this->difficulty;
 
-            if ($this->height > 10800) {
+            if ($this->height > 10800&&($this->height<80000||$this->height%3==0)) {
                 $argon = password_hash(
                     $base,
                     PASSWORD_ARGON2I,
@@ -267,6 +267,10 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
             $result = gmp_div($duration, $this->difficulty);
             if ($result > 0 && $result <= $this->limit) {
                 $confirmed = $this->submit($nonce, $argon);
+                if ($this->testnet) {
+                    echo "\nARGON: $argon\n";
+                    echo "\nBase: $base\n";
+                }
                 if ($confirmed && $result <= 240) {
                     $this->found++;
                 } elseif ($confirmed) {
@@ -275,7 +279,7 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
 
                 $this->submit++;
                 if ($this->testnet) {
-                    sleep(60);
+                    sleep(240);
                 }
             }
             $it++;
