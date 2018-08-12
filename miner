@@ -168,7 +168,7 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
      */
     private function submit(string $nonce, string $argon): bool
     {
-        if ($this->height > 10800 && ($this->height<80000 || $this->height%3 == 0)) {
+        if ($this->height > 10800 && ($this->height<80000 || $this->height%2 == 0)) {
             $argon = substr($argon, 30);
         } else {
             $argon = substr($argon, 29);
@@ -236,7 +236,7 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
             $nonce = preg_replace("/[^a-zA-Z0-9]/", "", $nonce);
             $base = $this->publicKey."-".$nonce."-".$this->block."-".$this->difficulty;
 
-            if ($this->height > 10800&&($this->height<80000||$this->height%3==0)) {
+            if ($this->height > 10800&&($this->height<80000||$this->height%2==0)) {
                 $argon = password_hash(
                     $base,
                     PASSWORD_ARGON2I,
