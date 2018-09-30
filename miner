@@ -196,14 +196,16 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
         if ($info['status'] != self::NODE_STATUS_OK) {
             return false;
         }
+
         $data = $info['data'];
         $this->block = $data['block'];
         $this->difficulty = $data['difficulty'];
-        if ($this->type == self::MODE_POOL) {
+
+        $this->limit = 240;
+
+        if ($this->type === self::MODE_POOL) {
             $this->limit = $data['limit'];
             $this->publicKey = $data['public_key'];
-        } else {
-            $this->limit = 240;
         }
 
         $this->height = $data['height'];
@@ -225,11 +227,9 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
      */
     private function submit(string $nonce, string $argon): bool
     {
-        if ($this->height > 10800 && ($this->height<80000 || $this->height%2 == 0)) {
-            $argon = substr($argon, 30);
-        } else {
+        $argon = ($this->height > 10800 && ($this->height < 80000 || $this->height % 2 == 0)) ?
+            substr($argon, 30) :
             $argon = substr($argon, 29);
-        }
 
         echo "--> Submitting nonce $nonce / $argon\n";
 
@@ -293,19 +293,17 @@ For Pool mining: ./miner pool <pool-address> <your-address>\n\n";
             $nonce = preg_replace("/[^a-zA-Z0-9]/", "", $nonce);
             $base = $this->publicKey."-".$nonce."-".$this->block."-".$this->difficulty;
 
-            if ($this->height > 10800&&($this->height<80000||$this->height%2==0)) {
-                $argon = password_hash(
+            $argon = ($this->height > 10800 && ($this->height < 80000 || $this->height % 2 == 0)) ?
+                password_hash(
                     $base,
                     PASSWORD_ARGON2I,
                     ['memory_cost' => 524288, "time_cost" => 1, "threads" => 1]
-                );
-            } else {
+                ) :
                 $argon = password_hash(
                     $base,
                     PASSWORD_ARGON2I,
                     ['memory_cost' => 16384, "time_cost" => 4, "threads" => 4]
                 );
-            }
 
             $hash = $base.$argon;
             for ($i = 0; $i < 5; $i++) {
