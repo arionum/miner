@@ -35,24 +35,81 @@ class Miner
      */
     public const NODE_STATUS_OK = 'ok';
 
+    /**
+     * @var string
+     */
     private $publicKey;
+    /**
+     * @var string
+     */
     private $privateKey;
+    /**
+     * @var float
+     */
     private $speed;
+    /**
+     * @var float
+     */
     private $avgSpeed;
+    /**
+     * @var string
+     */
     private $node;
+    /**
+     * @var string
+     */
     private $block;
+    /**
+     * @var int
+     */
     private $difficulty;
+    /**
+     * @var int
+     */
     private $counter;
+    /**
+     * @var int
+     */
     private $allTime;
+    /**
+     * @var int
+     */
     private $beginTime;
+    /**
+     * @var string
+     */
     private $type;
+    /**
+     * @var int
+     */
     private $limit;
+    /**
+     * @var string
+     */
     private $worker;
+    /**
+     * @var int
+     */
     private $lastUpdate;
+    /**
+     * @var int
+     */
     private $submit;
+    /**
+     * @var int
+     */
     private $confirm;
+    /**
+     * @var int
+     */
     private $found;
+    /**
+     * @var int
+     */
     private $height;
+    /**
+     * @var bool
+     */
     private $testnet;
 
     /**
