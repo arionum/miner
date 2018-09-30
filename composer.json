@@ -6,7 +6,8 @@
   "require": {
     "php": "^7.2",
     "ext-gmp": "*",
-    "ext-openssl": "*"
+    "ext-openssl": "*",
+    "ext-json": "*"
   },
   "bin": [
     "miner"
