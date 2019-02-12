@@ -12,7 +12,7 @@ A proof of concept Arionum miner.
 
 ## Usage
 
-**For pool mining:**
+**For solo mining:**
 
 The miner's IP must be added in the node's allowed hosts.
 
